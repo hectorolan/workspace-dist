@@ -1,0 +1,20 @@
+# Dev override — test the LOCAL working copy inside the container without touching GitHub
+# or firing real jobs. Dummy tokens satisfy the entrypoint's env check; nothing authenticates.
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm agent bash   # poke around
+services:
+  agent:
+    restart: "no"
+    volumes:
+      - .:/home/node/sources/workspace
+    environment:
+      SKIP_GIT_SYNC: "1"       # don't pull over the bind-mounted working copy
+      SKIP_CATCHUP: "1"        # don't fire catch-up jobs from a dev container
+      CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN:-dev-dummy}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-dev-dummy}
+      # identity is required env since 2026-07-20 (no code defaults) — dev dummies:
+      WORKSPACE_REPO_URL: ${WORKSPACE_REPO_URL:-https://example.invalid/dev.git}
+      GIT_USER_NAME: ${GIT_USER_NAME:-dev-dummy}
+      GIT_USER_EMAIL: ${GIT_USER_EMAIL:-dev@example.invalid}
+      OWNER_EMAIL: ${OWNER_EMAIL:-owner@example.invalid}
+      AGENT_EMAIL: ${AGENT_EMAIL:-agent@example.invalid}

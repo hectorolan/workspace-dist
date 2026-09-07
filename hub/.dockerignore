@@ -1,0 +1,15 @@
+node_modules
+dist
+.env
+.git
+.github
+docs
+ops
+test
+e2e
+test-results
+playwright-report
+blob-report
+.playwright
+*.md
+*.log

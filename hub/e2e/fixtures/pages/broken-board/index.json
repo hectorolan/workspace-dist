@@ -1,0 +1,1 @@
+{ "widgets": [ THIS IS DELIBERATELY NOT VALID JSON — a malformed tier-2 layout must render a visible layout-error card, never crash the hub (TP-widg-032)

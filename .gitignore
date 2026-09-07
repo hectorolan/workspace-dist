@@ -1,0 +1,15 @@
+# Secrets and personal machine state — never in the repo
+.claude/settings.local.json
+.secrets
+.env
+*.env
+
+# Project repos live as siblings of workspace/ directly under sources/<repo>,
+# outside this repo's working tree — no ignore entries needed for them (see CLAUDE.md rule 6).
+
+# Node dependencies at any level (root workspaces, api, …); lockfiles ARE committed
+node_modules/
+
+# All runtime/derived state (run stdout, API log, fallback, inbox artifacts, job-out)
+# lives in the per-machine data dir (WS_DATA_DIR, outside every git tree). The DB is
+# the only source of truth for records; nothing ephemeral is tracked here.

@@ -1,0 +1,4 @@
+{
+  "_note": "Repo inventory facts the clients need. `retired` names projects that are finished/abandoned: `ws query --summary` (the portfolio sweep read by the digest and the orchestrator) skips them, so dead projects stop surfacing in the daily digest. Their audit history is NOT deleted — it stays in the central DB and is still reachable on purpose with `ws query --repo <name>` or `--summary --include-retired`. Add a repo here the same session you retire it; the container picks it up on the next `ws pull` tick (no restart, the filter is client-side).",
+  "retired": []
+}

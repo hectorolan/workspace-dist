@@ -1,0 +1,40 @@
+{
+  "_note": "Provenance of skills vendored from EXTERNAL GitHub repos — the one source of truth for 'is this skill ours or upstream'. Skills absent from this file are internal (authored in this repo). Read by the hub Skills page (shows the GitHub source on a skill's detail page) and by the upstream checker (cli/util/skillsync.js, triggered by the scheduled gh-workflow .github/workflows/skills-upstream-sync.yml in the control plane — SYSTEM.md 'Skills upstream sync'; on-demand from a station via cli/util-tools/skills-upstream-sync.js). On an upstream change it NEVER merges: it opens a PR from branch skills/<name>-<sha7> titled \"Agent: update for skill '<name>'\" for the CEO's review — production environments never fetch upstream and consume main only (Hector 2026-07-26). `sha` = the upstream path-scoped commit pinned at install/refresh. Local additions inside a vendored SKILL.md must sit between `<!-- workspace-local:start -->` and `<!-- workspace-local:end -->` markers — the refresher re-applies those blocks after replacing the files with upstream content.",
+  "skills": {
+    "cicd-pipeline-skill": {
+      "repo": "LambdaTest/agent-skills",
+      "path": "cicd-pipeline-skill",
+      "sha": "7f5a151c9b3fe7e73f1856b9c11325de96f718c6"
+    },
+    "cloud-solution-architect": {
+      "repo": "microsoft/skills",
+      "path": ".github/skills/cloud-solution-architect",
+      "sha": "e1f9cce11758d305e6c77683fe34ccc394586291"
+    },
+    "frontend-design": {
+      "repo": "anthropics/skills",
+      "path": "skills/frontend-design",
+      "sha": "2235be7c60b551f5de82ade908fd3816455afcda"
+    },
+    "internal-comms": {
+      "repo": "anthropics/skills",
+      "path": "skills/internal-comms",
+      "sha": "b9e19e6f44773509fbdd7001d77ff41a49a486c1"
+    },
+    "jest-skill": {
+      "repo": "LambdaTest/agent-skills",
+      "path": "jest-skill",
+      "sha": "a7cdbf033ede0442d393a3a816507166dc196896"
+    },
+    "skill-creator": {
+      "repo": "anthropics/skills",
+      "path": "skills/skill-creator",
+      "sha": "b9e19e6f44773509fbdd7001d77ff41a49a486c1"
+    },
+    "webapp-testing": {
+      "repo": "anthropics/skills",
+      "path": "skills/webapp-testing",
+      "sha": "b9e19e6f44773509fbdd7001d77ff41a49a486c1"
+    }
+  }
+}

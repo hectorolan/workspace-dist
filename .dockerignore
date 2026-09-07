@@ -1,0 +1,4 @@
+# The build only needs the bootstrap entrypoint (the repo is cloned at runtime).
+# Excluding everything else keeps the build context tiny and secrets out of the image.
+*
+!setup-scripts/container/entrypoint.sh

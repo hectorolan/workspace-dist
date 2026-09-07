@@ -1,0 +1,89 @@
+name: CD (staging)
+
+# Continuous deployment to the STAGING target on the Azure VM. Production is
+# untouched by this workflow: it keeps deploying through the VM host cron
+# (`deploy.sh hub`, every 5 min). The two run in parallel on purpose — this
+# pipeline has to prove itself on staging before anyone discusses retiring the cron.
+#
+# Two properties are deliberate:
+#   * It does NOT re-implement the deploy. The deploy job runs the workspace's
+#     one pipeline script, `setup-scripts/deploy/deploy.sh hub-staging`,
+#     which owns fetch -> CI gate -> build -> health check -> rollback -> audit log.
+#     Anything that needs changing about deploying is changed there, once.
+#   * It stays pull-based. The deploy job runs on a self-hosted runner ON the VM,
+#     which is outbound-only: no deploy key in GitHub, no inbound SSH/NSG hole,
+#     and no repository secrets at all.
+
+on:
+  # Deploy only what CI has already approved. A `push` trigger would race CI, and
+  # polling the commit's check runs from inside this workflow would find this very
+  # run in progress and wait for itself.
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: cd-staging
+  cancel-in-progress: false # never interrupt a deploy mid-flight
+
+permissions:
+  contents: read
+
+jobs:
+  verify-image:
+    name: verify production image
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # workflow_run checks out the default branch by default — pin the commit CI passed on.
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+
+      # Build exactly what the VM will build, then prove the container boots and
+      # answers /healthz. A broken Dockerfile or a boot-time config error is caught
+      # here, on a disposable runner, instead of on the VM.
+      - name: Build image
+        run: docker build -t hub-app:ci .
+
+      - name: Boot and health check
+        run: |
+          docker run -d --name verify -p 8080:8080 \
+            -e SESSION_SECRET=ci-verify \
+            -e BASE_URL=http://localhost:8080 \
+            hub-app:ci
+          for i in $(seq 1 20); do
+            if curl -fsS http://localhost:8080/healthz | grep -q '"ok":true'; then
+              echo "healthy after ${i}s"; exit 0
+            fi
+            sleep 1
+          done
+          echo "container never became healthy"; docker logs verify; exit 1
+
+      - name: Container logs on failure
+        if: failure()
+        run: docker logs verify || true
+
+      - name: Tear down
+        if: always()
+        run: docker rm -f verify || true
+
+  deploy-staging:
+    name: deploy to VM staging
+    needs: verify-image
+    # Repository variable, not a secret: unset (or anything but 'true') skips this
+    # job, which keeps the commit's checks green for the production deploy gate.
+    # Set it only once the self-hosted runner is registered — see the README.
+    if: vars.CD_STAGING_ENABLED == 'true'
+    runs-on: [self-hosted, linux, hub-vm]
+    steps:
+      # No checkout: the pipeline script manages its own deploy clone on the host.
+      # --ci-verified because the workflow_run gate above already established that
+      # CI concluded success for this commit.
+      - name: Run the deploy pipeline
+        run: $HOME/agent/workspace/setup-scripts/deploy/deploy.sh hub-staging --force --ci-verified
+
+      - name: Assert staging is serving
+        run: curl -fsS http://127.0.0.1:8081/healthz | grep -q '"ok":true'

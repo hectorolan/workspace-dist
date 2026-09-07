@@ -1,0 +1,1454 @@
+/* hub component styles. Every value is a token from tokens.css — no ad-hoc
+ * colors, sizes, or durations. Class hooks the Playwright suite relies on keep
+ * their names (.card, .filters, .conv-index, article.msg, .status-badge,
+ * .kind-badge — test-plan assumption 6). */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 var(--fs-base) / var(--lh-ui) var(--font-ui);
+}
+
+a {
+  color: var(--accent-ink);
+  transition: color var(--t-fast) var(--ease);
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---- shell ---------------------------------------------------------------- */
+
+header.site {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  padding: var(--sp-3) var(--pad-shell-x);
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-6);
+}
+
+header.site .brand a {
+  font: 600 var(--fs-sm) / 1 var(--font-data);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+  transition: color var(--t-fast) var(--ease);
+}
+
+header.site .brand a:hover {
+  color: var(--accent-ink);
+}
+
+nav.sections {
+  display: flex;
+  flex-wrap: wrap; /* six sections must never force horizontal page scroll */
+  gap: var(--sp-1) var(--sp-4);
+}
+
+nav.sections a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: var(--fs-sm);
+  padding: var(--sp-1) 0;
+  border-bottom: 2px solid transparent;
+  transition:
+    color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease);
+}
+
+nav.sections a:hover {
+  color: var(--ink);
+}
+
+nav.sections a.active {
+  color: var(--accent-ink);
+  font-weight: 600;
+  border-bottom-color: var(--accent);
+}
+
+/* Grouping-section subtabs — Claude (Core / Agents / Skills / Features) and
+   Documents (Plans / Tests / Records / Conversations) share this one strip:
+   quieter than the top bar, same active idiom as nav.sections. */
+nav.subtabs {
+  display: flex;
+  gap: var(--sp-4);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  padding: var(--sp-2) var(--sp-5);
+}
+
+nav.subtabs a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: var(--fs-sm);
+  padding: var(--sp-1) 0;
+  border-bottom: 2px solid transparent;
+  transition:
+    color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease);
+}
+
+nav.subtabs a:hover {
+  color: var(--ink);
+}
+
+nav.subtabs a.active {
+  color: var(--accent-ink);
+  font-weight: 600;
+  border-bottom-color: var(--accent);
+}
+
+.shell {
+  max-width: var(--shell-max);
+  margin: var(--pad-shell-y) auto;
+  padding: 0 var(--pad-shell-x);
+}
+
+footer.site {
+  max-width: var(--shell-max);
+  margin: 0 auto var(--pad-shell-y);
+  padding: 0 var(--pad-shell-x);
+  color: var(--muted);
+  font: 400 var(--fs-xs) / var(--lh-ui) var(--font-data);
+}
+
+footer.site a {
+  color: inherit;
+}
+
+/* Reading pages stretch END TO END — the CEO's explicit call, 2026-08-01,
+ * superseding the centred reading column of earlier the same day.
+ *
+ * The tradeoff was put to him with the number visible and he chose it: prose
+ * fills the shell, so a 1280px viewport renders ~121 characters per line
+ * against the 45–75 readable band (WCAG and dyslexia guidance suggest ≤80).
+ * What he gets in exchange is what he asked for twice — no empty right third,
+ * maximum words per row. Line length is now bounded only by --shell-max
+ * (1080px), so it does not run away on an ultrawide monitor.
+ *
+ * The wrapper is KEPT rather than deleted: it still marks which pages are
+ * prose (digest, plan, agent/skill README, knowledge doc, conversation thread)
+ * versus row-shaped (the indexes, the Features matrix), so narrowing is one token away if
+ * he ever wants it back — change --reading-col-max, nothing else.
+ * Guarded by TP-nexus-e2e-062/063. */
+.reading-col {
+  max-width: var(--reading-col-max);
+  margin-inline: auto;
+}
+
+/* ---- cards + the status rail (signature) ---------------------------------- */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: var(--rail) solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--pad-card-y) var(--pad-card-x);
+  margin-bottom: var(--sp-4);
+}
+
+.card.rail-accent {
+  border-left-color: var(--accent);
+}
+
+.card h1 {
+  font: 600 var(--fs-xl) / var(--lh-tight) var(--font-ui);
+  margin: 0 0 var(--sp-3);
+}
+
+.eyebrow {
+  font: 600 var(--fs-xs) / 1 var(--font-data);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 var(--sp-2);
+}
+
+.empty {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.sub {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  margin: 0 0 var(--sp-4);
+}
+
+.ledger-meta {
+  font: 400 var(--fs-xs) / var(--lh-ui) var(--font-data);
+  color: var(--muted);
+  margin: 0 0 var(--sp-4);
+}
+
+/* ---- long-form reading (digests, plans, docs) ------------------------------ */
+
+.prose {
+  font: 400 var(--fs-md) / var(--lh-reading) var(--font-reading);
+  max-width: var(--measure);
+}
+
+.prose h1 {
+  font: 600 var(--fs-xl) / var(--lh-tight) var(--font-ui);
+  margin: 0 0 var(--sp-3);
+}
+
+.prose h2 {
+  font: 600 var(--fs-lg) / var(--lh-tight) var(--font-ui);
+  margin: var(--sp-5) 0 var(--sp-2);
+  padding-bottom: var(--sp-1);
+  border-bottom: 1px solid var(--line);
+}
+
+.prose h3 {
+  font: 600 var(--fs-md) / var(--lh-tight) var(--font-ui);
+  margin: var(--sp-4) 0 var(--sp-2);
+}
+
+.prose p {
+  margin: var(--sp-3) 0;
+}
+
+.prose li {
+  margin: var(--sp-1) 0;
+}
+
+.prose blockquote {
+  border-left: var(--rail) solid var(--line);
+  margin: var(--sp-3) 0;
+  padding: var(--sp-1) var(--sp-4);
+  color: var(--muted);
+}
+
+.prose code {
+  font-family: var(--font-data);
+  font-size: 0.85em;
+  background: var(--paper);
+  padding: 1px var(--sp-1);
+  border-radius: var(--radius);
+}
+
+.prose pre {
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  padding: var(--sp-4);
+  border-radius: var(--radius);
+  overflow-x: auto;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-ui);
+}
+
+.prose pre code {
+  background: none;
+  padding: 0;
+}
+
+.prose img {
+  max-width: 100%;
+}
+
+.prose table {
+  border-collapse: collapse;
+  font: 400 var(--fs-sm) / var(--lh-ui) var(--font-ui);
+}
+
+.prose th,
+.prose td {
+  border: 1px solid var(--line);
+  padding: var(--sp-2) var(--sp-3);
+  text-align: left;
+}
+
+.prose th {
+  background: var(--paper);
+  font-family: var(--font-data);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ---- filters ---------------------------------------------------------------- */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  margin: 0 0 var(--sp-3);
+}
+
+.filters a {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-family: var(--font-data);
+  font-size: var(--fs-xs);
+  line-height: 2;
+  transition:
+    color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease);
+}
+
+.filters a:hover {
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+
+.filters a.active {
+  color: var(--accent-ink);
+  background: var(--accent-wash);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+/* ---- index rows (the ledger) ------------------------------------------------ */
+
+ul.conv-index {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* One row = one stacked block (the CEO's 2026-08-02 two-line spec — the
+ * `.two-line` class on the ul stays as the suite's hook): line 1 the name, its
+ * badges, and any `after` chips; optional curated summary; last line the
+ * machine facts. position:relative anchors the stretched row link below —
+ * that is what keeps the WHOLE row clickable while `after` chips stay
+ * ordinary in-flow line-1 siblings, never nested anchors (the 2026-08-17
+ * chip-column fix). */
+ul.conv-index li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sp-1);
+  padding: var(--sp-3) var(--sp-2);
+  margin: 0;
+  border-bottom: 1px solid var(--line-soft);
+  border-left: var(--rail) solid transparent;
+  transition:
+    border-left-color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease);
+}
+
+ul.conv-index li:last-child {
+  border-bottom: none;
+}
+
+ul.conv-index li:hover {
+  background: var(--paper);
+  border-left-color: var(--accent);
+}
+
+ul.conv-index li.rail-archived:hover {
+  border-left-color: var(--muted);
+}
+
+/* Line 1 flows inline, so chips land immediately after the title's badges and
+ * wrap with the text on narrow screens. */
+ul.conv-index .conv-line1 {
+  min-width: 0;
+}
+
+ul.conv-index a.row-link {
+  text-decoration: none;
+}
+
+/* The stretched link: the row anchor wraps only the title but covers the
+ * whole row through this overlay — no dead zones. */
+ul.conv-index a.row-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+/* Everything after the row link on line 1 (the `after` chips) rides above the
+ * stretched link so it stays independently clickable, spaced like a badge. */
+ul.conv-index .conv-line1 > a.row-link ~ * {
+  position: relative;
+  z-index: 1;
+  margin-left: var(--sp-2);
+  margin-right: 0;
+}
+
+ul.conv-index .conv-title {
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+ul.conv-index .conv-meta,
+ul.conv-index .item-desc {
+  color: var(--muted);
+  font: 400 var(--fs-xs) / var(--lh-ui) var(--font-data);
+}
+
+/* The curated summary (Agents/Skills) reads as a body line between the two. */
+ul.conv-index .item-desc {
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+}
+
+/* The machine-facts line in the data voice — date (when the row has one) then
+ * the row's key, count pushed to the right edge and silent at zero. */
+ul.conv-index .conv-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sp-4);
+}
+
+/* Long keys ellipsize rather than shove the count off the row. */
+ul.conv-index .meta-facts {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+ul.conv-index .thread-count {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* ---- badges (mono chips, square — ledger stamps) ---------------------------- */
+
+.status-badge,
+.kind-badge,
+.repo-badge,
+.tag {
+  display: inline-block;
+  font: 600 var(--fs-xs) / 1.7 var(--font-data);
+  border-radius: var(--radius);
+  padding: 0 var(--sp-2);
+  margin-left: var(--sp-2);
+  vertical-align: middle;
+  color: var(--muted);
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+
+.kind-badge {
+  border-style: dashed;
+}
+
+.kind-badge.kd-plan {
+  color: var(--accent-ink);
+  background: var(--accent-wash);
+  border-color: var(--accent);
+}
+
+.kind-badge.kd-audit {
+  color: var(--alert);
+  background: var(--alert-wash);
+  border-color: var(--alert);
+}
+
+.kind-badge.kd-design,
+.kind-badge.kd-doc {
+  color: var(--amber);
+  background: var(--amber-wash);
+  border-color: var(--amber);
+}
+
+.kind-badge.kd-test-plan {
+  color: var(--accent-ink);
+  background: var(--accent-wash);
+  border-color: var(--accent);
+}
+
+/* The conversation view rows (document-threads N2): amber, like the exchange-
+   colored trigger rail — a conversation is dialogue, not a work document. */
+.kind-badge.kd-conversation {
+  color: var(--amber);
+  background: var(--amber-wash);
+  border-color: var(--amber);
+}
+
+/* Baseline records (devops regression baselines) read like the other reference
+   records on the Records subtab (hn-documents-subtabs-2026-08-15). */
+.kind-badge.kd-baseline {
+  color: var(--amber);
+  background: var(--amber-wash);
+  border-color: var(--amber);
+}
+
+/* Held test-plans (pinned CEO block) are the CEO's action items — the one loud
+   marker on the Tests subtab (hn-documents-subtabs-2026-08-15). */
+.needs-ceo {
+  display: inline-block;
+  font: 600 var(--fs-xs) / 1.7 var(--font-data);
+  border-radius: var(--radius);
+  padding: 0 var(--sp-2);
+  margin-left: var(--sp-2);
+  vertical-align: middle;
+  color: var(--alert);
+  background: var(--alert-wash);
+  border: 1px solid var(--alert);
+}
+
+/* Thread-entry count on index rows (quiet ledger: absent when zero). */
+ul.conv-index .thread-count {
+  color: var(--muted);
+}
+
+.repo-badge,
+.tag {
+  color: var(--accent-ink);
+  background: var(--accent-wash);
+  border-color: var(--accent);
+}
+
+/* ---- skill origin chips (Skills index; TP-skills-origin) -------------------- */
+
+ul.conv-index .origin-chip {
+  display: inline-block;
+  font: 600 var(--fs-xs) / 1.7 var(--font-data);
+  border-radius: var(--radius);
+  padding: 0 var(--sp-2);
+  white-space: nowrap;
+  vertical-align: middle;
+  color: var(--muted);
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+
+ul.conv-index a.origin-chip.origin-external {
+  color: var(--accent-ink);
+  background: var(--accent-wash);
+  border-color: var(--accent);
+  text-decoration: none;
+  transition:
+    background-color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+
+ul.conv-index a.origin-chip.origin-external:hover,
+ul.conv-index a.origin-chip.origin-external:focus-visible {
+  color: var(--paper);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ---- artifact-linkage chips (TP-convarch-010, TP-convchip-004/005) ----------
+ * A conversation that generated a document wears a small linked chip — on its
+ * index row (a sibling of the row anchor, the origin-chip idiom) and in its
+ * detail header next to the status badge — deep-linking the artifact's
+ * /plans/<ref> page so the outcome is one click, not a re-read. */
+a.artifact-chip {
+  display: inline-block;
+  font: 600 var(--fs-xs) / 1.7 var(--font-data);
+  border-radius: var(--radius);
+  padding: 0 var(--sp-2);
+  margin-right: var(--sp-2);
+  white-space: nowrap;
+  vertical-align: middle;
+  text-decoration: none;
+  color: var(--accent-ink);
+  background: var(--accent-wash);
+  border: 1px solid var(--accent);
+  transition:
+    background-color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+
+a.artifact-chip:hover,
+a.artifact-chip:focus-visible {
+  color: var(--paper);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.status-badge.st-active {
+  color: var(--accent-ink);
+  background: var(--accent-wash);
+  border-color: var(--accent);
+}
+
+.status-badge.st-draft {
+  color: var(--amber);
+  background: var(--amber-wash);
+  border-color: var(--amber);
+}
+
+.status-badge.st-done {
+  color: var(--muted);
+  background: var(--paper);
+  border-color: var(--line);
+}
+
+.status-badge.st-archived {
+  color: var(--muted);
+  background: var(--paper);
+  border-color: var(--line);
+  border-style: dashed;
+}
+
+/* ---- station detail (/stations/:env — the matrix drill-down) ----------------
+ * Three states, three reads: healthy is quiet (default rail + viridian chip),
+ * stale/warn is amber, failing is oxide with an alert rail. Never-reported is
+ * deliberately the QUIETEST of all — dashed muted chip, no rail color — because
+ * absence is a normal state (new box, empty DB), not a failure. */
+
+.card.rail-alert {
+  border-left-color: var(--alert);
+}
+
+.card.rail-amber {
+  border-left-color: var(--amber);
+}
+
+.card.station h2 {
+  font: 600 var(--fs-lg) / var(--lh-tight) var(--font-ui);
+  margin: 0 0 var(--sp-2);
+}
+
+.station-badge {
+  display: inline-block;
+  font: 600 var(--fs-xs) / 1.7 var(--font-data);
+  border-radius: var(--radius);
+  padding: 0 var(--sp-2);
+  margin-left: var(--sp-2);
+  vertical-align: middle;
+  color: var(--muted);
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+
+.station-badge.sn-ok,
+.station-badge.lv-ok {
+  color: var(--accent-ink);
+  background: var(--accent-wash);
+  border-color: var(--accent);
+}
+
+.station-badge.sn-failing,
+.station-badge.lv-fail {
+  color: var(--alert);
+  background: var(--alert-wash);
+  border-color: var(--alert);
+}
+
+.station-badge.sn-stale,
+.station-badge.lv-warn {
+  color: var(--amber);
+  background: var(--amber-wash);
+  border-color: var(--amber);
+}
+
+.station-badge.sn-never,
+.station-badge.lv-info {
+  color: var(--muted);
+  background: var(--paper);
+  border-color: var(--line);
+  border-style: dashed;
+}
+
+/* The headline: non-OK checks, readable without a click. */
+ul.check-list {
+  list-style: none;
+  margin: var(--sp-3) 0 0;
+  padding: 0;
+}
+
+ul.check-list li {
+  padding: var(--sp-2) 0 var(--sp-2) var(--sp-3);
+  border-left: var(--rail) solid var(--line);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-ui);
+}
+
+ul.check-list li + li {
+  margin-top: var(--sp-1);
+}
+
+ul.check-list li.check-fail {
+  border-left-color: var(--alert);
+}
+
+ul.check-list li.check-warn {
+  border-left-color: var(--amber);
+}
+
+ul.check-list li .station-badge {
+  margin: 0 var(--sp-2) 0 0;
+}
+
+.station-allclear {
+  margin: var(--sp-3) 0 0;
+  font-size: var(--fs-sm);
+}
+
+/* ---- feature registry (Features matrix + per-station feature panel) ---------
+ * One chip vocabulary for both pages, token-driven, no new colors: ready is the
+ * accent chip, missing the oxide alert, warn/stale amber (stale dashed — the
+ * evidence exists but is old), off dashed muted (deliberately off — the
+ * existing "deliberate absence" cue), unmeasured dotted muted italics
+ * (declared, no evidence — must never read as ready), never-reported the quiet
+ * dashed cue, and n/a the quietest of all: borderless faded text, because
+ * absence of DUTY must never look like absence of capability. */
+
+.feature-chip {
+  display: inline-block;
+  font: 600 var(--fs-xs) / 1.7 var(--font-data);
+  border-radius: var(--radius);
+  padding: 0 var(--sp-2);
+  margin-left: var(--sp-2);
+  vertical-align: middle;
+  color: var(--muted);
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+
+.feature-chip.fc-ready {
+  color: var(--accent-ink);
+  background: var(--accent-wash);
+  border-color: var(--accent);
+}
+
+.feature-chip.fc-missing {
+  color: var(--alert);
+  background: var(--alert-wash);
+  border-color: var(--alert);
+}
+
+.feature-chip.fc-warn {
+  color: var(--amber);
+  background: var(--amber-wash);
+  border-color: var(--amber);
+}
+
+.feature-chip.fc-stale {
+  color: var(--amber);
+  background: var(--amber-wash);
+  border-color: var(--amber);
+  border-style: dashed;
+}
+
+.feature-chip.fc-off {
+  border-style: dashed;
+}
+
+.feature-chip.fc-unmeasured {
+  border-style: dotted;
+  font-style: italic;
+}
+
+.feature-chip.fc-never {
+  border-style: dashed;
+}
+
+.feature-chip.fc-na {
+  border-color: transparent;
+  background: none;
+  opacity: 0.45;
+}
+
+/* The matrix (Features page): one kind at a time behind an in-page tab row —
+   the Documents-subtab template (same link/active idiom as nav.subtabs),
+   placed inside the content shell rather than under the site header. */
+
+nav.kind-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  border-bottom: 1px solid var(--line);
+  padding: var(--sp-2) var(--sp-1);
+  margin-bottom: var(--sp-4);
+}
+
+nav.kind-tabs a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: var(--fs-sm);
+  padding: var(--sp-1) 0;
+  border-bottom: 2px solid transparent;
+  transition:
+    color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease);
+}
+
+nav.kind-tabs a:hover {
+  color: var(--ink);
+}
+
+nav.kind-tabs a.active {
+  color: var(--accent-ink);
+  font-weight: 600;
+  border-bottom-color: var(--accent);
+}
+
+.feature-group h2 {
+  font: 600 var(--fs-lg) / var(--lh-tight) var(--font-ui);
+  margin: 0 0 var(--sp-2);
+}
+
+table.feature-matrix {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: var(--fs-sm);
+}
+
+table.feature-matrix th {
+  text-align: left;
+  font: 600 var(--fs-xs) / var(--lh-ui) var(--font-data);
+  color: var(--muted);
+  padding: var(--sp-1) var(--sp-3) var(--sp-1) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+table.feature-matrix td {
+  padding: var(--sp-2) var(--sp-3) var(--sp-2) 0;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+}
+
+/* The name cell owns most of the row: the scope column retired into an inline
+   tag after the title, and its freed width belongs to the description. */
+td.fm-feature {
+  width: 55%;
+}
+
+td.fm-feature .feature-chip {
+  margin-left: var(--sp-2);
+}
+
+.fm-meta {
+  margin-top: var(--sp-1);
+  color: var(--muted);
+  font-family: var(--font-data);
+  font-size: var(--fs-xs);
+}
+
+/* The scope tag: same chip vocabulary as the state chips, sitting inline right
+   after the feature title (the scope column is retired). */
+.scope-badge {
+  display: inline-block;
+  font: 600 var(--fs-xs) / 1.7 var(--font-data);
+  color: var(--muted);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0 var(--sp-2);
+  margin-left: var(--sp-2);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+td.fm-cell {
+  white-space: nowrap;
+}
+
+td.fm-cell .feature-chip {
+  margin-left: 0;
+}
+
+/* The row's second line (C-2): the registry's colloquial description — regular
+ * UI type, never mono, so it reads as prose on any width. It owns the width the
+ * scope column freed; the cap only guards against unreadably long measures. */
+.fm-desc {
+  margin-top: var(--sp-1);
+  color: var(--ink);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-ui);
+  font-weight: 400;
+  max-width: 72ch;
+}
+
+/* Station column headers (C-1): env name links to /stations/:env; the control
+ * plane's verdicts ride underneath. A never-reported station dims its whole
+ * column — same faded read as the n/a chip: absence is quiet, not broken. */
+th.fm-station a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-underline-offset: 2px;
+}
+
+th.fm-station a:hover {
+  color: var(--accent-ink);
+  text-decoration-color: var(--accent);
+}
+
+.fmh-verdicts {
+  display: block;
+  margin-top: var(--sp-1);
+  font-weight: 400;
+}
+
+.fmh-verdicts .station-badge {
+  margin: 0 var(--sp-1) 0 0;
+}
+
+.fmh-age {
+  color: var(--muted);
+  font: 400 var(--fs-xs) / var(--lh-ui) var(--font-data);
+  white-space: nowrap;
+}
+
+.fm-col-never {
+  opacity: 0.45;
+}
+
+/* Reporters outside the configured roster: never a matrix column, still never
+ * lost — a quiet strip linking each to its detail page. */
+.fm-rogue-title {
+  font: 600 var(--fs-lg) / var(--lh-tight) var(--font-ui);
+  margin: 0 0 var(--sp-1);
+}
+
+ul.rogue-list {
+  list-style: none;
+  margin: var(--sp-2) 0 0;
+  padding: 0;
+}
+
+ul.rogue-list li {
+  padding: var(--sp-1) 0;
+  font-size: var(--fs-sm);
+}
+
+ul.rogue-list li a {
+  font-weight: 600;
+}
+
+ul.rogue-list .station-badge:first-of-type {
+  margin-left: var(--sp-2);
+}
+
+ul.rogue-list .fmh-age {
+  margin-left: var(--sp-2);
+}
+
+/* Full check table — always open: the detail page's whole point is the detail. */
+.station-checks {
+  margin-top: var(--sp-3);
+}
+
+.station-checks table {
+  border-collapse: collapse;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+}
+
+.station-checks td {
+  padding: var(--sp-1) var(--sp-3) var(--sp-1) 0;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+}
+
+.station-checks td:nth-child(2) {
+  font-family: var(--font-data);
+  white-space: nowrap;
+}
+
+.station-checks .station-badge {
+  margin-left: 0;
+}
+
+/* env-doctor's plain-language explainer — the check row's secondary line
+   (check-explainers-hub-2026-08-27), shared by the headline strip and the table. */
+.check-explain {
+  margin-top: var(--sp-1);
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-ui);
+  font-weight: 400;
+  max-width: 72ch;
+}
+
+/* ---- meta grid (agent pages) ------------------------------------------------ */
+
+dl.meta {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--sp-1) var(--sp-5);
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+
+dl.meta dt {
+  color: var(--muted);
+  font: 600 var(--fs-xs) / var(--lh-ui) var(--font-data);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  align-self: baseline;
+}
+
+dl.meta dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+/* ---- buttons ------------------------------------------------------------------ */
+
+button {
+  font: 600 var(--fs-sm) / var(--lh-ui) var(--font-ui);
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--surface);
+  color: var(--ink);
+  transition:
+    color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease);
+}
+
+button:hover {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+button.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--surface);
+}
+
+button.btn-primary:hover:not(:disabled) {
+  background: var(--accent-ink);
+  color: var(--surface);
+}
+
+button.row-action {
+  font: 600 var(--fs-xs) / var(--lh-ui) var(--font-data);
+  padding: var(--sp-1) var(--sp-3);
+  color: var(--muted);
+  white-space: nowrap;
+  margin-right: var(--sp-2);
+}
+
+button.row-action:hover {
+  color: var(--accent-ink);
+}
+
+/* ---- pager -------------------------------------------------------------------- */
+
+.pager {
+  display: flex;
+  justify-content: space-between;
+  margin: var(--sp-4) 0;
+  font-size: var(--fs-sm);
+}
+
+.pager a {
+  text-decoration: none;
+}
+
+.pager a:hover {
+  text-decoration: underline;
+}
+
+/* ---- conversation thread -------------------------------------------------------- */
+
+article.msg {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: var(--rail) solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: var(--sp-3);
+}
+
+article.msg header {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--sp-2) var(--sp-4);
+  border-bottom: 1px solid var(--line-soft);
+  font-size: var(--fs-sm);
+}
+
+article.msg .who {
+  font-weight: 700;
+}
+
+article.msg .when {
+  color: var(--muted);
+  font: 400 var(--fs-xs) / var(--lh-ui) var(--font-data);
+}
+
+article.msg .msg-body {
+  padding: var(--sp-2) var(--sp-4) var(--sp-4);
+}
+
+article.msg.agent {
+  border-left-color: var(--accent);
+}
+
+article.msg.agent .who {
+  color: var(--accent-ink);
+}
+
+article.msg.agent-error {
+  border-left-color: var(--alert);
+}
+
+article.msg.agent-error .who {
+  color: var(--alert);
+}
+
+/* ---- document threads (below digest/plan documents — design: nexus-document-threads) */
+
+/* The thread reads as more ledger below the document: same msg rows, same rails.
+ * Roles by rail — CEO = ink (their hand), agent = accent (the system's voice,
+ * shared with article.msg.agent above), trigger/origin = amber (provenance). */
+
+.doc-thread {
+  margin-top: var(--sp-5);
+}
+
+.thread-eyebrow {
+  margin: 0 0 var(--sp-3);
+}
+
+.thread-note {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  font-style: italic;
+  margin: 0 0 var(--sp-3);
+}
+
+article.msg.ceo {
+  border-left-color: var(--ink);
+}
+
+article.msg.trigger {
+  border-left-color: var(--amber);
+}
+
+article.msg.trigger .who {
+  color: var(--amber);
+}
+
+article.msg .trigger-note {
+  margin: var(--sp-2) var(--sp-4) 0;
+  color: var(--muted);
+  font: 400 var(--fs-xs) / var(--lh-ui) var(--font-data);
+  letter-spacing: 0.04em;
+}
+
+/* The date + provenance stack on a thread entry's right edge: the message's
+ * stamp on top, its keys ("conversations/<id> · message <id> · <kind>" — the
+ * CEO's trace-back ask, 2026-08-02) right below, both in the machine voice. */
+article.msg .when-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--sp-1);
+  text-align: right;
+}
+
+article.msg .prov {
+  color: var(--muted);
+  font: 400 var(--fs-xs) / var(--lh-ui) var(--font-data);
+}
+
+/* ---- comment box + modal ---------------------------------------------------------- */
+
+.comment-box h2 {
+  font: 600 var(--fs-lg) / var(--lh-tight) var(--font-ui);
+  margin: 0 0 var(--sp-2);
+}
+
+.comment-box textarea,
+#comment-modal textarea {
+  width: 100%;
+  resize: vertical;
+  font: 400 var(--fs-base) / var(--lh-ui) var(--font-ui);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--sp-2) var(--sp-3);
+  transition: border-color var(--t-fast) var(--ease);
+}
+
+.comment-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+
+#comment-status {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+
+#comment-status.comment-ok {
+  color: var(--accent-ink);
+}
+
+#comment-status.comment-err {
+  color: var(--alert);
+}
+
+#comment-modal {
+  border: 1px solid var(--line);
+  border-left: var(--rail) solid var(--accent);
+  border-radius: var(--radius);
+  padding: var(--sp-5) var(--sp-5);
+  width: min(560px, 92vw);
+}
+
+#comment-modal::backdrop {
+  background: rgba(28, 35, 33, 0.4);
+}
+
+#comment-modal h2 {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-lg);
+}
+
+/* ---- responsive --------------------------------------------------------------------
+ * Breakpoint widths are the documented constants in tokens.css (phone 480,
+ * tablet 768) — media queries cannot consume custom properties, so the
+ * literals are restated here; change them there first. Chrome and type-scale
+ * stepping happens in tokens.css; these blocks hold only structural changes. */
+
+@media (max-width: 768px) {
+  header.site {
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-5);
+  }
+
+}
+
+@media (max-width: 480px) {
+  header.site {
+    gap: var(--sp-2) var(--sp-4);
+  }
+
+  .prose pre {
+    padding: var(--sp-3);
+  }
+
+  /* wide markdown tables scroll inside the card instead of stretching the page */
+  .prose table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  dl.meta {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  dl.meta dd {
+    margin-bottom: var(--sp-2);
+  }
+
+  article.msg header {
+    padding: var(--sp-2) var(--sp-3);
+  }
+
+  article.msg .msg-body {
+    padding: var(--sp-2) var(--sp-3) var(--sp-3);
+  }
+}
+
+/* ---- guide (Home > Guide: the manual + its sticky section TOC) -------------
+ * Design hub-home-custom-pages-design Part 1 (test plan
+ * hub-home-restructure-2026-08-29): manual content left, a right-hand column
+ * enumerating the guide's sections. The TOC card is sticky so the section list
+ * rides along on a long read; ≤768px it collapses above the content as a jump
+ * list (order swap — the DOM keeps content first for reading order). */
+
+.guide-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--toc-col);
+  gap: var(--sp-4);
+  align-items: start;
+}
+
+.guide-toc {
+  position: sticky;
+  top: var(--sp-4);
+}
+
+.guide-toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.guide-toc li {
+  margin: 0 0 var(--sp-2);
+}
+
+.guide-toc a {
+  color: var(--accent-ink);
+  text-decoration: none;
+  font: 400 var(--fs-sm) / var(--lh-ui) var(--font-ui);
+  transition: color var(--t-fast) var(--ease);
+}
+
+.guide-toc a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.guide-section {
+  /* Sections scroll under the fixed-height viewport edge, not a fixed header —
+   * a little breathing room keeps an anchor jump from landing flush. */
+  scroll-margin-top: var(--sp-4);
+}
+
+/* The section heading is rendered by the page (not inside .prose), so it
+ * mirrors the .prose h2 ledger treatment for one visual voice. */
+.guide-heading {
+  font: 600 var(--fs-lg) / var(--lh-tight) var(--font-ui);
+  margin: var(--sp-5) 0 var(--sp-2);
+  padding-bottom: var(--sp-1);
+  border-bottom: 1px solid var(--line);
+}
+
+@media (max-width: 768px) {
+  .guide-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .guide-toc {
+    position: static;
+    order: -1; /* the jump list leads on small screens */
+  }
+}
+
+/* Tier-3 custom pages (test plan hub-pages-framework-core-2026-08-29): the
+ * folder's static site fills the content column inside a sandboxed iframe
+ * (custom.jsx pins sandbox="allow-scripts allow-forms" — never
+ * allow-same-origin). The surface token keeps a paintless page readable. */
+.page-frame {
+  display: block;
+  width: 100%;
+  height: calc(100vh - 200px);
+  min-height: 420px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+/* Tier-2 widget boards (test plan hub-pages-tier2-widgets-2026-08-29): the
+ * server-composed widget cards. Degraded states (unknown widget, bad param,
+ * data-source error, layout error) reuse the .empty voice — visible, quiet,
+ * never a broken page. All values ride the existing tokens; feature cells
+ * reuse the .feature-chip vocabulary verbatim. */
+.widget-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: var(--sp-4);
+  align-items: start;
+}
+
+.widget-grid .card {
+  margin-bottom: 0;
+}
+
+.widget-card h2 {
+  font: 600 var(--fs-lg) / var(--lh-tight) var(--font-ui);
+  margin: 0 0 var(--sp-3);
+}
+
+.widget-card.widget-error,
+.widget-card.widget-layout-error {
+  border-left-color: var(--alert);
+}
+
+.widget-card.widget-unknown,
+.widget-card.widget-invalid,
+.widget-card.widget-unconfigured {
+  border-left-color: var(--amber);
+}
+
+ul.widget-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+ul.widget-rows li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+ul.widget-rows li:last-child {
+  border-bottom: none;
+}
+
+.widget-meta {
+  color: var(--muted);
+  font: 400 var(--fs-sm) / var(--lh-ui) var(--font-ui);
+}
+
+.widget-table-wrap {
+  overflow-x: auto;
+}
+
+.widget-feature-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: var(--fs-sm);
+}
+
+.widget-feature-table th,
+.widget-feature-table td {
+  text-align: left;
+  padding: var(--sp-2) var(--sp-3) var(--sp-2) 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.widget-feature-table th {
+  font: 600 var(--fs-xs) / 1 var(--font-data);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--sp-3);
+}
+
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  padding: var(--sp-3);
+}
+
+.stat-value {
+  font: 600 var(--fs-xl) / var(--lh-tight) var(--font-data);
+}
+
+.stat-tile-error .stat-value {
+  color: var(--muted);
+}

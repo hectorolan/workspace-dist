@@ -1,0 +1,10 @@
+* text=auto
+*.sh text eol=lf
+# Container files MUST stay LF (executed inside Linux)
+setup-scripts/container/** text eol=lf
+Dockerfile text eol=lf
+.dockerignore text eol=lf
+# Logging API runs inside the Linux container
+server/** text eol=lf
+# PowerShell 5.1 scripts stay CRLF on Windows checkouts (and need UTF-8 BOM, see SYSTEM.md)
+*.ps1 text eol=crlf

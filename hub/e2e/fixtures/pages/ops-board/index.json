@@ -1,0 +1,15 @@
+{
+  "title": "Ops Board",
+  "widgets": [
+    { "widget": "stat-tiles", "params": { "tiles": [
+      { "source": "open-plans" },
+      { "source": "latest-digest" },
+      { "source": "stations-ok" }
+    ] } },
+    { "widget": "digest-list", "title": "Morning reads", "params": { "limit": 2 } },
+    { "widget": "plan-list", "params": { "kind": "test-plan", "limit": 5 } },
+    { "widget": "feature-cells", "params": { "features": ["tool-gh", "tool-claude"], "stations": ["station-green", "station-red"] } },
+    { "widget": "plan-view", "params": { "slug": "e2e-active-plan" } },
+    { "widget": "crystal-ball", "params": { "sees": "the future" } }
+  ]
+}

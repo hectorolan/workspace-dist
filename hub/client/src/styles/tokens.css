@@ -1,0 +1,137 @@
+/* hub design tokens — the ONE source of visual truth.
+ *
+ * Aesthetic direction (frontend-design skill, PR body has the rationale):
+ * "field ledger" — a quiet, paper-cool instrument panel for one operator who
+ * reads machine-generated artifacts (digests, plans, log threads) every day.
+ * IBM Plex three ways: Serif for long-form reading, Sans for chrome, Mono for
+ * machine facts (dates, slugs, statuses). One viridian accent; status colors
+ * derive from a constrained palette and nothing else. The signature element is
+ * the status rail: a 3px left edge on rows and cards keyed to status/kind,
+ * echoing the audit-trail nature of the system.
+ *
+ * Rules: every color, size, spacing, and duration in the app comes from these
+ * custom properties. Spacing sits on a 4px grid. Type sizes come from the
+ * explicit scale below. Interactive transitions are 150–300ms (TP-react-030).
+ */
+
+:root {
+  /* palette (constrained; named) */
+  --paper: #f2f4f1; /* fog — app background */
+  --surface: #ffffff; /* card background */
+  --ink: #1c2321; /* spruce ink — text */
+  --muted: #5d6b64; /* secondary text */
+  --line: #d7ded8; /* hairlines */
+  --line-soft: #e6ebe6; /* row separators */
+  --accent: #176d53; /* viridian — the one accent */
+  --accent-ink: #0e5540; /* accent for text/links */
+  --accent-wash: #e9f2ee; /* accent tint for active chips */
+  --alert: #a33d2a; /* oxide — failures/errors */
+  --alert-wash: #f7ebe7;
+  --amber: #8a6116; /* drafts/pending */
+  --amber-wash: #f5efdf;
+
+  /* type */
+  --font-ui: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  --font-reading: 'IBM Plex Serif', Georgia, serif;
+  --font-data: 'IBM Plex Mono', Consolas, monospace;
+
+  /* explicit type scale (px-locked, 12→26; the reading sizes step down on
+   * phones — see the breakpoint block at the end of this file) */
+  --fs-xs: 0.75rem; /* 12 — eyebrows, badges */
+  --fs-sm: 0.8125rem; /* 13 — meta, filters */
+  --fs-base: 0.9375rem; /* 15 — UI body */
+  --fs-md: 1.0625rem; /* 17 — reading body (15 on phones) */
+  --fs-lg: 1.3125rem; /* 21 — section titles (19 on phones) */
+  --fs-xl: 1.625rem; /* 26 — page titles (22 on phones) */
+  --lh-tight: 1.3;
+  --lh-ui: 1.5;
+  --lh-reading: 1.5; /* the standard starting point for body text (was 1.6) */
+
+  /* 4px/8px layout grid */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --sp-8: 64px;
+
+  /* motion — all interactive states (150–300ms band) */
+  --t-fast: 180ms;
+  --t-slow: 240ms;
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  /* structure */
+  --rail: 3px; /* the signature status rail */
+  --radius: 2px; /* ledger corners: barely-rounded, never pills */
+  /* Prose fills its container — the CEO's call, 2026-08-01 (see .reading-col in
+   * app.css for the tradeoff he accepted). --measure is kept as the tuning knob
+   * rather than deleted: set it back to a px width and prose narrows again with
+   * no other change. `none` means the only bound is --shell-max below.
+   *
+   * If you ever retune it: ~7.95px per character of Plex Serif prose at 17px,
+   * so N characters is about N x 7.95px. Do NOT express it in `ch` — `ch` is the
+   * width of the "0" glyph (~10.2px), not an average character, so 72ch rendered
+   * ~92 cpl; and it resolves against each element's OWN font, which made the card
+   * (Plex Sans) and the prose (Plex Serif) disagree and turned main red on a
+   * Linux CI runner while passing on Windows. */
+  --measure: none;
+  --measure-col: var(--measure);
+  --reading-col-max: none; /* reading pages stretch to --shell-max; the wrapper
+                              still marks prose-vs-index pages, so restoring a
+                              narrow column is this one value. */
+  --shell-max: 1080px; /* content column cap */
+  --toc-col: 220px; /* the Guide's right-hand section TOC column */
+
+  /* responsive chrome — everything between the viewport edge and the first
+   * rendered character. Stepped at the breakpoints below so a phone spends
+   * ≤13% of its width on chrome (it was 21% with the fixed paddings). */
+  --pad-shell-x: var(--sp-5); /* viewport edge → shell */
+  --pad-shell-y: var(--sp-6); /* header/footer breathing room */
+  --pad-card-x: var(--sp-6); /* card edge → text */
+  --pad-card-y: var(--sp-5);
+}
+
+/* Breakpoints (documented constants). CSS media queries cannot consume custom
+ * properties, so these widths appear as literals in the @media blocks below
+ * and in app.css's structural rules — change them HERE first, then grep for
+ * the literal. Desktop is everything wider than tablet.
+ *   phone  = 480px   one-hand devices: tightest chrome, reading scale steps down
+ *   tablet = 768px   portrait tablets / narrow windows: intermediate chrome */
+
+@media (max-width: 768px) {
+  :root {
+    --pad-shell-x: var(--sp-4);
+    --pad-shell-y: var(--sp-5);
+    --pad-card-x: var(--sp-5);
+    --pad-card-y: var(--sp-4);
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    /* near-full-bleed cards: 8px paper + 12px card padding keeps the hairline
+     * and the signature rail while chrome drops to ~12% of a 375px viewport */
+    --pad-shell-x: var(--sp-2);
+    --pad-shell-y: var(--sp-3);
+    --pad-card-x: var(--sp-3);
+    --pad-card-y: var(--sp-4);
+    /* phone reading scale: smaller type is the counterintuitive readability
+     * fix — at 17px even a zero-chrome 375px viewport is only ~44 cpl, so the
+     * 45–75 band is unreachable without stepping down to 15px (~47 cpl). */
+    --fs-md: 0.9375rem; /* 15 — reading body */
+    --fs-lg: 1.1875rem; /* 19 — section titles */
+    --fs-xl: 1.375rem; /* 22 — page titles */
+    --lh-reading: 1.55; /* kept verbatim from the mobile pass (23.3px lines at
+                           15px) even though root moved to 1.5 — the phone
+                           layout is measured and signed off; do not disturb */
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-fast: 1ms;
+    --t-slow: 1ms;
+  }
+}

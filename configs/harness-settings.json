@@ -1,0 +1,8 @@
+{
+  "_note": "DESIRED state for the per-machine Claude Code harness config at ~/.claude/settings.json (the USER file, not the repo's .claude/settings.json). This is the one config class that travels in neither the repo nor the DB: the harness reads that path at startup, before any workspace code runs, so it can never be DB-backed and no clone can deliver it. The repo therefore declares what it SHOULD contain and `node cli/util-tools/env-doctor.js` compares — a human applies it by hand (plan environment-setup-streamlining, D1a/D5). Not having it is silent: windows-pc-2 ran the implementer and coo on Fable with no Opus fallback from the day it was declared complete. NEVER put a secret in this file: it is a public repo file, and env-doctor prints declared values.",
+  "appliesToKinds": ["interactive + rollback host"],
+  "userSettings": {
+    "_note": "Keys env-doctor asserts. A scalar and a single-element array count as equal ('opus' == ['opus']). Keys NOT listed here (theme, tui, autoUpdatesChannel) are personal taste and are left alone.",
+    "fallbackModel": ["opus"]
+  }
+}

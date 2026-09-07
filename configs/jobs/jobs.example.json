@@ -1,0 +1,60 @@
+{
+  "_note": "THE schedule, read by `ws scheduler` (cli/util/scheduler.js) — the one clock. The timezone below also drives every script date/hour via cli/util/clock.js (never raw UTC — the 2026-07-20 digest incident). Commands are ws subcommands (since Phase 2b, 2026-07-19) or forged util-tools run with node; retries are declarative here (the scheduler reruns a failed job). Overlap protection and boot catch-up are scheduler features; catch-up is config-driven per entry (2026-07-26): explicit catchUpArgs wins, a job with a runJob block defaults to ['--if-missing'] (idempotent by contract), catchUp: false opts out. Edits to this file take effect within one pull cycle — the self-restart (SYSTEM.md) syntax-gates the change and restarts the scheduler between fires, and catch-up self-heals a slot missed while the old table was armed. Agent jobs carry their compose config in a runJob block (cli/util/runjob.js: prompt/output with {date}/{output} placeholders, delivery email|none, agentAuditAreas for the compliance audit) — adding a scheduled agent job is a config edit here, no code change. `output` is a path within the per-machine data dir (WS_DATA_DIR, e.g. job-out/{date}.md); the runner fills {output} with the absolute data-dir path, stores the artifact as a DB message, and pushes nothing. The --if-missing catch-up window derives from the job's own cron (fixed hour/day-of-week). A job with `disabled: true` is never armed and never boot-caught-up by the scheduler (it logs 'disabled — not armed'); `ws run-job <name>` still runs it manually — the staging lane for candidate jobs awaiting a CEO gate.",
+  "timezone": "America/Los_Angeles",
+  "jobs": [
+    {
+      "name": "daily-digest",
+      "cron": "0 7 * * *",
+      "run": "ws run-job daily-digest",
+      "catchUpArgs": [
+        "--if-missing"
+      ],
+      "retries": 3,
+      "retryDelayMin": 10,
+      "runJob": {
+        "output": "job-out/{date}.md",
+        "prompt": "Use the newsroom subagent to produce today's daily digest per the daily-digest skill, applying the internal-comms skill (.claude/skills/internal-comms) structure/format guidance (closest guideline, e.g. company-newsletter/general-comms) to the layout — the format Hector selected 2026-07-26 — while keeping ALL content sections the daily-digest skill requires. Write it to {output} and update the rolling summary per the skill (ws plan set digest-rolling-summary). This session produces the digest file and the plan update only; the job ends there.",
+        "delivery": "email",
+        "subject": "Daily Digest — {date}",
+        "agentAuditAreas": [
+          "digest"
+        ]
+      },
+      "disabled": true
+    },
+    {
+      "name": "dependabot-triage",
+      "cron": "30 5 * * *",
+      "run": "node cli/util-tools/dependabot-triage.js",
+      "retries": 2,
+      "retryDelayMin": 15,
+      "disabled": true
+    },
+    {
+      "name": "backlog-prune",
+      "cron": "50 3 1 * *",
+      "run": "node cli/util-tools/backlog-prune.js --apply",
+      "retries": 2,
+      "retryDelayMin": 30,
+      "disabled": true
+    },
+    {
+      "name": "inbox-poll",
+      "cron": "3-59/15 * * * *",
+      "run": "ws run-inbox",
+      "disabled": true
+    },
+    {
+      "name": "workspace-pull",
+      "cron": "7-59/15 * * * *",
+      "run": "ws pull",
+      "disabled": true
+    },
+    {
+      "name": "db-backup",
+      "cron": "30 3 * * *",
+      "run": "ws backup",
+      "disabled": true
+    }
+  ]
+}

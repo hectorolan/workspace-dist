@@ -1,0 +1,180 @@
+{
+  "_note": "The DECLARED feature registry (design: ws plan get features-ui-restructure-design, the CEO 2026-08-27). Hand-authored catalog of what the system can do — liveness is never declared here, only DERIVED from existing evidence at read time by the log API's GET /feature (contract: server/README.md 'Feature registry'). Loader/validator: cli/util/features.js — it refuses unknown scope forms, envs/kinds not in configs/environments.json, job names not in configs/jobs/jobs.json, duplicate ids, and an absent/empty description; cli/test/features.test.js keeps THIS file valid against the real configs. Per feature: id (unique slug), title, kind (job|service|page|tool|check), scope (all | schedule-owner | env:<name> | kind:<station-kind>), description (REQUIRED, C-2: 1-2 plain-language sentences for an operator unfamiliar with the system — what it is, what it does for them, what off/missing roughly means; no internal jargon or slugs — the UI renders it verbatim and never hardcodes prose), evidence (check:<env-doctor-check-id> | job:<jobs.json-name> | runner-log:<log-area>), optional note. A feature with evidence: [] renders as declared-unmeasured — never fake liveness.",
+  "features": [
+    {
+      "id": "daily-digest",
+      "title": "Daily digest (newsroom compose + email delivery)",
+      "kind": "job",
+      "scope": "schedule-owner",
+      "description": "Writes a personal morning newspaper — world and tech news, a short learning section, and the status of the operator's projects — and emails it to the operator every day. When it is off or failing, the morning email simply stops arriving.",
+      "evidence": ["job:daily-digest"]
+    },
+    {
+      "id": "dependabot-triage",
+      "title": "Dependabot red-PR triage (daily scan + guarded merge)",
+      "kind": "job",
+      "scope": "schedule-owner",
+      "description": "Every morning, checks for automated dependency-update proposals whose tests failed, repairs the easy ones, and merges them under strict safety rules. Without it, broken update proposals pile up waiting for a human.",
+      "evidence": ["job:dependabot-triage"],
+      "note": "The idle scan writes no run rows (zero tokens by construction), so last-run is often unmeasured — the scheduler records the run locally."
+    },
+    {
+      "id": "backlog-prune",
+      "title": "Monthly backlog prune (Resolved sections to history plans)",
+      "kind": "job",
+      "scope": "schedule-owner",
+      "description": "Once a month, sweeps finished items out of the shared to-do list into an archive so the list stays short and readable. If it stops, nothing breaks — the to-do list just grows cluttered.",
+      "evidence": ["job:backlog-prune"],
+      "note": "The scheduled apply writes plan revisions, not audit lines, so last-run is unmeasured here by design."
+    },
+    {
+      "id": "inbox-poll",
+      "title": "Inbox poll (email + hub page-comment intake and dispatch)",
+      "kind": "job",
+      "scope": "schedule-owner",
+      "description": "Every fifteen minutes, reads the system's email inbox and the comments left on its website pages, and turns the actionable ones into work or replies. When it is down, messages sent to the system sit unanswered.",
+      "evidence": ["job:inbox-poll", "runner-log:inbox"],
+      "note": "The runner logs area 'inbox' on failures only — a quiet last-run is normal."
+    },
+    {
+      "id": "workspace-pull",
+      "title": "Container freshness tick (ws pull: PR watch, sweeps, replay, station report)",
+      "kind": "job",
+      "scope": "schedule-owner",
+      "description": "The server's fifteen-minute heartbeat: it pulls the latest shared files, watches open code reviews for changes, delivers any records queued while offline, and reports its own health. If it stops, the server drifts out of date and its health report goes stale.",
+      "evidence": ["job:workspace-pull"],
+      "note": "Pull ticks write no run rows (scheduled runs don't log); liveness shows in the schedule owner's station-report freshness instead."
+    },
+    {
+      "id": "db-backup",
+      "title": "Daily DB backup to workspace-backups",
+      "kind": "job",
+      "scope": "schedule-owner",
+      "description": "Copies the central database to a backup repository every night, so a dead server never loses the system's history and plans. If it is failing, a crash could cost up to a day of records.",
+      "evidence": ["job:db-backup", "runner-log:backup"]
+    },
+    {
+      "id": "service-workspace",
+      "title": "Agent container service env (workspace)",
+      "kind": "service",
+      "scope": "env:azure-vm",
+      "description": "Checks that the always-on agent program on the cloud server — the thing that runs all the scheduled work — has every setting it needs. Gaps here mean scheduled work can silently fail or run with pieces disabled.",
+      "evidence": ["check:cp-env:workspace"]
+    },
+    {
+      "id": "service-hub",
+      "title": "Hub prod service env",
+      "kind": "service",
+      "scope": "env:azure-vm",
+      "description": "Checks that the live version of the system's website on the cloud server has every setting it needs. Gaps can leave parts of the site broken even while it looks up.",
+      "evidence": ["check:cp-env:hub"]
+    },
+    {
+      "id": "service-hub-staging",
+      "title": "Hub staging service env",
+      "kind": "service",
+      "scope": "env:azure-vm",
+      "description": "The same settings check for the website's rehearsal copy, where changes are tried out before going live. Gaps here only affect testing — the live site is untouched.",
+      "evidence": ["check:cp-env:hub-staging"]
+    },
+    {
+      "id": "hub-continuous-deploy",
+      "title": "Hub continuous deployment (deploy.sh cron + prod compose wiring)",
+      "kind": "check",
+      "scope": "env:azure-vm",
+      "description": "The plumbing that automatically puts approved website changes live on the cloud server. If any piece is missing, approved changes stop reaching the live site until someone deploys by hand.",
+      "evidence": ["check:cp-cron", "check:cp-compose", "check:cp-clone"]
+    },
+    {
+      "id": "log-api",
+      "title": "Central log API reachable",
+      "kind": "service",
+      "scope": "all",
+      "description": "The system's shared memory: the one service where every machine records what it did and reads what the others did. A machine that cannot reach it works blind, queuing its records locally until the connection returns.",
+      "evidence": ["check:log-api"],
+      "note": "Judged per station: each station reports whether IT can reach the API (tunnel included)."
+    },
+    {
+      "id": "tool-node",
+      "title": "node runtime",
+      "kind": "tool",
+      "scope": "all",
+      "description": "The program runtime nearly every script in this system is written for. Without it, a machine cannot run any of the system's tooling at all.",
+      "evidence": ["check:tool:node"]
+    },
+    {
+      "id": "tool-git",
+      "title": "git (sync + credential helper)",
+      "kind": "tool",
+      "scope": "all",
+      "description": "The version-control program that fetches and publishes the shared files every machine works from. Without it, a machine can neither stay current nor share its work.",
+      "evidence": ["check:tool:git"]
+    },
+    {
+      "id": "tool-gh",
+      "title": "gh CLI (PR flow, git credentials)",
+      "kind": "tool",
+      "scope": "all",
+      "description": "The GitHub command-line helper used to open and inspect code reviews and to sign this machine in to GitHub. Without it, a machine can still edit files but cannot take part in the review flow.",
+      "evidence": ["check:tool:gh"]
+    },
+    {
+      "id": "tool-claude",
+      "title": "claude CLI (the harness / headless agent runs)",
+      "kind": "tool",
+      "scope": "all",
+      "description": "The AI assistant program that actually performs the work here, both in interactive sessions and in scheduled runs. Without it, a machine is just storage — nothing gets done on it.",
+      "evidence": ["check:tool:claude"]
+    },
+    {
+      "id": "tool-ssh",
+      "title": "ssh (log-API tunnel transport)",
+      "kind": "tool",
+      "scope": "kind:interactive + rollback host",
+      "description": "The secure-connection program a PC uses to reach the cloud server, including the private line to the system's shared memory. Without it, a PC cannot talk to the server at all.",
+      "evidence": ["check:tool:ssh"]
+    },
+    {
+      "id": "tool-docker",
+      "title": "docker (rollback lane)",
+      "kind": "tool",
+      "scope": "kind:interactive + rollback host",
+      "description": "Runs programs in isolated containers; on the PCs it exists so a copy of the server's setup can be started locally in an emergency or for testing. Missing means that fallback is unavailable — day-to-day work is unaffected.",
+      "evidence": ["check:tool:docker"]
+    },
+    {
+      "id": "tool-az",
+      "title": "az CLI (VM ops, NSG checks — optional)",
+      "kind": "tool",
+      "scope": "all",
+      "description": "The Azure command-line helper for managing the cloud server itself — restarting it, checking its firewall rules. It is optional: without it those checks are skipped and server management falls back to the web portal.",
+      "evidence": ["check:tool:az"],
+      "note": "Optional everywhere; env-doctor reports WARN, never FAIL, when absent."
+    },
+    {
+      "id": "workspace-pull-task",
+      "title": "Per-PC pull task (Claude-WorkspacePull, S4U)",
+      "kind": "job",
+      "scope": "kind:interactive + rollback host",
+      "description": "Each PC's own fifteen-minute background task that keeps the shared files current, holds the connection to the cloud server open, and forwards any records queued while offline. If it is not registered, that PC slowly drifts out of date and its queued records never leave.",
+      "evidence": ["check:pull-task"],
+      "note": "Registered per-PC in Task Scheduler, not in jobs.json — the 15-min tick is also the tunnel keeper and fallback replay."
+    },
+    {
+      "id": "nsg-ssh-allowlist",
+      "title": "NSG ssh allowlist admits this station's public IP",
+      "kind": "check",
+      "scope": "kind:interactive + rollback host",
+      "description": "The cloud server's firewall only accepts connections from approved internet addresses; this verifies the PC's current address is still on that list. When a home connection's address changes, this goes red and the PC cannot reach the server until the list is updated.",
+      "evidence": ["check:nsg-ssh-allowlist"]
+    },
+    {
+      "id": "tool-dist-export",
+      "title": "distribution exporter (dist-export)",
+      "kind": "tool",
+      "scope": "all",
+      "description": "Builds the shippable distribution tree from the export manifest: copies what the manifest resolves from the committed tree, derives the config templates, vendors the hub source at a pinned commit, applies the overlay, and scans the result for secrets and hardcoded identity before it can be pushed to the distribution repository as a single release commit. Declared-only: it runs on demand from any clone, so no station check measures it.",
+      "evidence": []
+    }
+  ]
+}

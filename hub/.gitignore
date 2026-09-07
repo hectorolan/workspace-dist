@@ -1,0 +1,17 @@
+node_modules/
+.env
+*.log
+
+# Playwright run artifacts (reports, traces, screenshots) — regenerated per run,
+# uploaded as CI artifacts on failure. Never committed.
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
+# ws log offline-fallback target (hub): written only when the log API is
+# unreachable, replayed on the next healthy tick. Audit history lives in the central DB.
+ops/log.md
+
+# Vite build output — built in CI/Docker, never committed.
+dist/

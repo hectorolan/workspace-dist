@@ -1,0 +1,10 @@
+{
+  "_note": "E2E fixture manifest — mirrors the real workspace .claude/skills/sources.json shape so the Skills page's upstream-source line has something to render. Not a real pin.",
+  "skills": {
+    "e2e-external-skill": {
+      "repo": "example-org/example-skills",
+      "path": "skills/e2e-external-skill",
+      "sha": "0123456789abcdef0123456789abcdef01234567"
+    }
+  }
+}

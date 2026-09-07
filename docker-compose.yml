@@ -1,0 +1,36 @@
+# Production-shaped run: clones the workspace from GitHub into a volume, pulls on start,
+# runs the scheduler 24/7. Works identically on Docker Desktop and any Linux VM (Azure later).
+#   docker compose up -d --build
+# Local dev/testing against your working copy (no clone, no jobs fired):
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+services:
+  agent:
+    build: .
+    image: agent-workspace
+    init: true
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false        # dev override supplies dummies; real runs need .env (see .env.example)
+    environment:
+      TZ: ${TZ:-America/Los_Angeles}
+      # Log API on all interfaces inside the container: the published port serves the
+      # hub container (via host.docker.internal) and the VM-local SSH-tunnel
+      # endpoint. No NSG rule admits 8790 from the internet — off-host access is the
+      # SSH tunnel ONLY (server/README.md "PC (off-host) access"). LOG_API_KEY (from
+      # .env) is REQUIRED with this bind — the server refuses to start keyless on a
+      # non-loopback host (WS-H1, see .env.example / server/README.md).
+      LOG_API_HOST: ${LOG_API_HOST:-0.0.0.0}
+    ports:
+      - "${LOG_API_PORT:-8790}:8790"
+    volumes:
+      - sources:/home/node/sources
+    healthcheck:
+      # healthy = the ws scheduler (the one clock) is running
+      test: ["CMD-SHELL", "pgrep -f 'ws.js scheduler'"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  sources:

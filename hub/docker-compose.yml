@@ -1,0 +1,36 @@
+# Local dev compose for hub. `docker compose up --build` serves on localhost:8080.
+#
+# Deploy note (devops): the same image runs on the Azure VM behind the Caddy TLS proxy, via
+# a separate production compose file (~/agent/hub/docker-compose.prod.yml on the VM,
+# not committed here) — override BASE_URL to https://ho-nexus.westus2.cloudapp.azure.com and
+# mount the `workspace_sources` named Docker volume (owned by the agent container's compose
+# project) read-only at /data/workspace-sources for the Claude tab's Core/Agents/Skills pages
+# (WORKSPACE_CLAUDE_DIR). Do not bind-mount a separate host clone of the workspace repo for
+# this; it goes stale silently. AUTH_BYPASS must NEVER be set there.
+# Log-API-backed sections (Digests/Documents/Stations/comment box): the prod .env
+# additionally needs LOG_API_URL/LOG_API_KEY (see
+# .env.example) — the log API is published on the VM host at :8790, so add
+# `extra_hosts: ["host.docker.internal:host-gateway"]` to the app service there and use
+# LOG_API_URL=http://host.docker.internal:8790. Unset = the page shows "not configured".
+# Core/Agents/Skills pages: prod reuses the same workspace_sources volume mount —
+# no new mount, just set WORKSPACE_CLAUDE_DIR=/data/workspace-sources/workspace/.claude.
+# Unset = the pages render empty lists (friendly state), rest of the app unaffected.
+# Custom pages (HUB_PAGES_DIR, unset = feature off): the prod override sets
+# HUB_PAGES_DIR: /data/pages and bind-mounts the host pages folder read-only —
+# `- /home/hector/agent/hub/pages:/data/pages:ro` — so dropped-in page folders appear
+# live, no restart. The authoritative live-host recipe + wiring state is the workspace
+# .claude/SETUP.md HO-Nexus row "Custom pages root (live host)"; wiring it is a
+# CEO/devops step, never agent initiative.
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file: .env # GOOGLE_OAUTH_CLIENT_ID/SECRET, ALLOWED_EMAIL, SESSION_SECRET, BASE_URL (gitignored)
+    environment:
+      # Workspace .claude dir (the Claude tab's Core/Agents/Skills pages), mounted below.
+      WORKSPACE_CLAUDE_DIR: /data/claude
+      PORT: "8080"
+    volumes:
+      - ../workspace/.claude:/data/claude:ro
+    restart: unless-stopped

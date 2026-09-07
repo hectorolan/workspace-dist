@@ -1,0 +1,17 @@
+{
+  "name": "@workspace/cli",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ws — the one entry point for workspace mechanics. util/ holds the shared modules; ws.js imports them relatively so every non-email command runs with zero npm install. Forged tools import this package (@workspace/cli).",
+  "exports": {
+    ".": "./util/index.js",
+    "./util/*": "./util/*.js"
+  },
+  "dependencies": {
+    "croner": "^10.0.1",
+    "imapflow": "^1.7.8",
+    "mailparser": "^3.9.20",
+    "nodemailer": "^9.0.6"
+  }
+}

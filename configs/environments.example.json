@@ -1,0 +1,45 @@
+{
+  "_note": "MACHINE-READABLE config only. Current status + per-environment state + the history of every add/remove/migrate: .claude/environments/environments_setup.md. How to set one up or retire one: .claude/SETUP.md. Neither copies the values below — this file wins on any disagreement. The environment inventory + schedule ownership (Hector 2026-07-19): scheduleOwner names the ONE environment allowed to run scheduled jobs; every environment identifies itself via the WS_ENV env var (enforcement + migration mechanics: SYSTEM.md 'Scheduled tasks' — not restated here). Non-sensitive instance config lives here too (2026-07-20: no code defaults for identity/instance values — sensitive ones are required env vars, see .env.example).",
+  "_ceo_note": "WHO THE SYSTEM WORKS FOR. The one place the operator's name is written; cli/util/ceo.js is the single read path, used for the CEO block pinned on held test-plans, the 'is this case waiting on a human' test, and the orchestrator prompts. Change it here and the whole system addresses someone else — nothing in code hardcodes a name (CLAUDE.md's invariant: a fresh clone must already be a working system for ITS operator). NOT the place for the CEO's email: OWNER_EMAIL / AGENT_EMAIL own that fact in env (.env.example) and the mail path reads them directly — nothing here needs an address, nothing there needs a name. Unset name degrades to the generic label 'the CEO', never to a guess. NAMING lives here too (the CEO, 2026-08-15): `hubTitle` is the operator's chosen name for the hub web page, served to the hub app via the log API `GET /identity` (server/README.md) — unset degrades to 'Hub'.",
+  "ceo": {
+    "name": "Your Name",
+    "pronouns": "they/them",
+    "hubTitle": "Hub"
+  },
+  "scheduleOwner": "local-docker",
+  "backupRepoUrl": "https://github.com/<your-account>/workspace-backups.git",
+  "activeProjectRepos": [],
+  "external_skills_git": {
+    "_note": "Canonical upstream sources for external agent skills (plan skills-integration-migration, backlog item 41). Agents install/update skills ONLY from these repos — no substitute sources; a missing repo/path is a blocked line, not an improvisation. Vendored copies live in .claude/skills/<name>/.",
+    "anthropics/skills": {
+      "url": "https://github.com/anthropics/skills",
+      "skills": [
+        "skill-creator",
+        "internal-comms",
+        "webapp-testing",
+        "frontend-design"
+      ]
+    },
+    "LambdaTest/agent-skills": {
+      "url": "https://github.com/LambdaTest/agent-skills",
+      "skills": [
+        "jest-skill",
+        "cicd-pipeline-skill"
+      ]
+    },
+    "microsoft/skills": {
+      "url": "https://github.com/microsoft/skills",
+      "skills": [
+        "cloud-solution-architect"
+      ]
+    }
+  },
+  "environments": {
+    "local-docker": {
+      "kind": "docker-container",
+      "role": "24/7 job host + log API + DB (compose project: workspace container + Postgres service)",
+      "where": "the machine running docker compose",
+      "identifiesAs": "WS_ENV=local-docker in .env"
+    }
+  }
+}
